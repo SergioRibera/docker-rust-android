@@ -21,5 +21,4 @@ zip -r base.zip *
 
 cd -
 
-# install bundletool
 java -jar $BUNDLETOOL_PATH build-bundle --modules=$TEMP/base.zip --output=$OUTPUT
