@@ -29,6 +29,7 @@ apply from: "config.gradle"
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.androidxAppcompat
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 }
 
 android {
@@ -100,6 +101,11 @@ cargo {
 import org.apache.tools.ant.taskdefs.condition.Os
 
 tasks.whenTaskAdded { task ->
+    if (task.name == 'assembleDebug') {
+        cargo.profile = "debug"
+    } else if (task.name == 'assembleRelease') {
+        cargo.profile = "release"
+    }
     if (task.name == 'mergeDebugJniLibFolders' || task.name == 'mergeReleaseJniLibFolders') {
         task.dependsOn 'cargoBuild'
     }
