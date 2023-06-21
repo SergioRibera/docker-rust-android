@@ -1,0 +1,81 @@
+buildscript {
+    apply from: "config.gradle"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath libraries.androidGradlePlugin
+        classpath "org.mozilla.rust-android-gradle:plugin:0.9.3"
+    }
+}
+
+plugins {
+    id "org.mozilla.rust-android-gradle.rust-android" version "0.9.3"
+}
+
+apply from: "config.gradle"
+apply plugin: 'com.android.application'
+apply plugin: 'org.mozilla.rust-android-gradle.rust-android'
+
+android {
+    namespace getExportPackageName()
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
+
+    defaultConfig {
+        applicationId getExportPackageName()
+        versionCode getExportVersionCode()
+        versionName getExportVersionName()
+        minSdkVersion getExportMinSdkVersion()
+        targetSdkVersion getExportTargetSdkVersion()
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile "AndroidManifest.xml"
+            java.srcDirs = ["src"]
+            assets.srcDirs = ["../../assets"]
+            res.srcDirs = ["../../res_android"]
+        }
+    }
+}
+
+cargo {
+    module = "../"
+    targets = ["arm64"]
+    libname = "rust_lib"
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
+}
+
+afterEvaluate {
+    // The `cargoBuild` task isn't available until after evaluation.
+    android.applicationVariants.all { variant ->
+        def productFlavor = ""
+        variant.productFlavors.each {
+            productFlavor += "${it.name.capitalize()}"
+        }
+        def buildType = "${variant.buildType.name.capitalize()}"
+        tasks["generate${productFlavor}${buildType}Assets"].dependsOn(tasks["cargoBuild"])
+    }
+}
