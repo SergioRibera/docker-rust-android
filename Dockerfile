@@ -42,7 +42,7 @@ COPY --chmod=0755 ./tools/apk2aab /bin
 # Download gradle with correct version
 RUN wget -c https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && rm -fr /tmp/gradle-${GRADLE_VERSION}-bin.zip
 # Install bundletools
-RUN wget -c "https://github.com/google/bundletool/releases/download/${BUNDLETOOL_VERSION}/bundletool-all-${BUNDLETOOL_VERSION}.jar" -P ${ANDROID_HOME}/bundletool-all-${BUNDLETOOL_VERSION}.jar
+RUN wget -c "https://github.com/google/bundletool/releases/download/${BUNDLETOOL_VERSION}/bundletool-all-${BUNDLETOOL_VERSION}.jar" -P ${ANDROID_HOME}
 
 # Install command line tools
 RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
