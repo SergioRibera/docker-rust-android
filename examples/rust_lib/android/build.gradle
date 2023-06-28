@@ -52,6 +52,11 @@ cargo {
     module = "../"
     targets = ["arm64"]
     libname = "rust_lib"
+    if (project.gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
+        profile = "release"
+    } else {
+        profile = "debug"
+    }
 }
 
 repositories {
@@ -71,11 +76,6 @@ dependencies {
 afterEvaluate {
     // The `cargoBuild` task isn't available until after evaluation.
     android.applicationVariants.all { variant ->
-        if (task.name == 'assembleDebug') {
-            cargo.profile = "debug"
-        } else if (task.name == 'assembleRelease') {
-            cargo.profile = "release"
-        }
         def productFlavor = ""
         variant.productFlavors.each {
             productFlavor += "${it.name.capitalize()}"
