@@ -1,4 +1,4 @@
-FROM rust:1.70-slim
+FROM rust:1.80-slim
 
 # Variable arguments
 ARG RUST_VERSION=1.70.0
