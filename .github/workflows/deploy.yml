@@ -21,7 +21,8 @@ jobs:
       - id: metadata
         run: |
           RUST_VERSION=$(cat ./Dockerfile | grep -oP 'rust:\K\d+\.\d+' | tr -d '.')
-          echo "rust_versino=$RUST_VERSION" >> $GITHUB_OUTPUT
+          echo "Rust Version: $RUST_VERSION"
+          echo "rust_version=$RUST_VERSION" >> $GITHUB_OUTPUT
 
       - name: Setup Docker BuildX
         uses: docker/setup-buildx-action@v3
