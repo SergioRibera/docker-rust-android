@@ -14,7 +14,7 @@ ARG PLATFORM_VERSION=android-33
 # Install JDK required for build android
 RUN apt-get update -yqq && \
     apt-get install -y --no-install-recommends \
-    libcurl4-openssl-dev libssl-dev pkg-config build-essential python wget zip unzip openjdk-${JAVA_VERSION}-jdk && \
+    libcurl4-openssl-dev libssl-dev pkg-config build-essential python3 wget zip unzip openjdk-${JAVA_VERSION}-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
