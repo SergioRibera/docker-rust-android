@@ -22,9 +22,9 @@ Command Line:
 
 ```bash
 # Debug
-docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:170-sdk-33 assembleDebug -p gradle
+docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:180-sdk-33 assembleDebug -p gradle
 # Release
-docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:170-sdk-33 assembleRelease -p gradle
+docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:180-sdk-33 assembleRelease -p gradle
 ```
 
 Github Action:
@@ -35,7 +35,7 @@ env:
 
 jobs:
   native_build:
-    container: sergioribera/rust-android:170-sdk-33
+    container: sergioribera/rust-android:180-sdk-33
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
