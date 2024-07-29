@@ -1,7 +1,7 @@
 FROM rust:1.80-slim
 
 # Variable arguments
-ARG RUST_VERSION=1.70.0
+# ARG RUST_VERSION=1.70.0
 ARG GRADLE_VERSION=8.0.1
 ARG GRADLE_PLUGIN_VERSION=7.4
 ARG JAVA_VERSION=17
@@ -19,8 +19,8 @@ RUN apt-get update -yqq && \
     rm -rf /var/lib/apt/lists/*
 
 # Install toolchain required
-RUN rustup toolchain install -c rust-src -- ${RUST_VERSION} && \
-    rustup default ${RUST_VERSION}
+# RUN rustup toolchain install -c rust-src -- ${RUST_VERSION} && \
+#     rustup default ${RUST_VERSION}
 # Install android target required
 RUN rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android x86_64-unknown-linux-gnu
 
