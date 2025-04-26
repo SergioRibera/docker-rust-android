@@ -1,0 +1,175 @@
+name: Build and Publish Rust-Android Docker Images
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"
+  push:
+    branches:
+      - main
+    paths:
+      - Dockerfile
+      - .github/workflows/docker-publish.yml
+
+env:
+  DOCKER_HUB_REPO: sergioribera/rust-android
+  DOCKER_HUB_USERNAME: sergioribera
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Generate build matrix
+        id: set-matrix
+        run: |
+          echo "Fetching Rust versions..."
+          RUST_VERSIONS=$(curl -s https://api.github.com/repos/rust-lang/rust/releases \
+            | jq -r '.[] | .tag_name' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -Vr \
+            | head -n 20 \
+            | sed 's/\.[0-9]*$//' | uniq | grep -E '^1\.(6[8-9]|7[0-9]|80)')
+
+          echo "Available Rust versions:"
+          echo "$RUST_VERSIONS"
+
+          echo "Setting up Android SDK..."
+          mkdir -p ~/android-sdk
+          export ANDROID_SDK_ROOT=~/android-sdk
+          export PATH=$PATH:~/android-sdk/cmdline-tools/bin
+
+          wget -c "https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip" -P /tmp && \
+            unzip -d "$ANDROID_SDK_ROOT" /tmp/commandlinetools-linux-13114758_latest.zip && \
+            rm -fr /tmp/commandlinetools-linux-13114758_latest.zip
+
+          echo "Fetching Android SDK versions..."
+          SDK_LIST=$(sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --list --channel=0 | grep -E 'platforms;android-[0-9]+' | awk '{print $1}' | cut -d';' -f2 | sort -Vr)
+          ANDROID_VERSIONS=$(echo "$SDK_LIST" | grep -E 'android-(3[3-9])' | head -4 | sed 's/android-//')
+
+          echo "Selected Android versions:"
+          echo "$ANDROID_VERSIONS"
+
+          echo "Fetching NDK versions..."
+          NDK_VERSIONS=$(sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --list --channel=0 | grep -E 'ndk;[0-9]+\.[0-9]+\.[0-9]+' | awk '{print $1}' | cut -d';' -f2 | sort -Vr)
+          NDK_VERSION=$(echo "$NDK_VERSIONS" | head -1)
+
+          echo "Selected NDK version: $NDK_VERSION"
+
+          MATRIX_JSON="{\"include\":["
+          FIRST=true
+
+          for RUST_VERSION in $RUST_VERSIONS; do
+            for SDK_VERSION in $ANDROID_VERSIONS; do
+              if [[ "$SDK_VERSION" -ge 34 ]]; then
+                BUILD_TOOLS="34.0.0"
+                GRADLE_VERSION="8.2"
+                GRADLE_PLUGIN="8.1.0"
+              else
+                BUILD_TOOLS="33.0.2"
+                GRADLE_VERSION="8.0.1"
+                GRADLE_PLUGIN="7.4"
+              fi
+
+              if [[ "$FIRST" = false ]]; then
+                MATRIX_JSON+=","
+              fi
+              FIRST=false
+
+              MATRIX_JSON+=$(jq -n \
+                --arg rust_version "$RUST_VERSION" \
+                --arg sdk_version "$SDK_VERSION" \
+                --arg ndk_version "$NDK_VERSION" \
+                --arg build_tools_version "$BUILD_TOOLS" \
+                --arg gradle_version "$GRADLE_VERSION" \
+                --arg gradle_plugin_version "$GRADLE_PLUGIN" \
+                --arg platform_version "android-$SDK_VERSION" \
+                --arg tag "$RUST_VERSION-sdk-$SDK_VERSION" \
+                '{
+                  rust_version: $rust_version,
+                  sdk_version: $sdk_version,
+                  ndk_version: $ndk_version,
+                  build_tools_version: $build_tools_version,
+                  gradle_version: $gradle_version,
+                  gradle_plugin_version: $gradle_plugin_version,
+                  platform_version: $platform_version,
+                  tag: $tag
+                }')
+            done
+          done
+
+          MATRIX_JSON+="]}"
+
+          echo "Generated matrix:"
+          echo "$MATRIX_JSON" | jq .
+          MATRIX_JSON=$(echo "$MATRIX_JSON" | jq -c .)
+
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+  build-and-publish:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      fail-fast: false
+
+    name: Build Rust ${{ matrix.rust_version }} with Android SDK ${{ matrix.sdk_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:master
+            network=host
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_HUB_USERNAME }}
+          password: ${{ env.DOCKER_HUB_TOKEN }}
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.DOCKER_HUB_REPO }}:${{ matrix.tag }}
+          build-args: |
+            RUST_VERSION=${{ matrix.rust_version }}
+            GRADLE_VERSION=${{ matrix.gradle_version }}
+            GRADLE_PLUGIN_VERSION=${{ matrix.gradle_plugin_version }}
+            JAVA_VERSION=17
+            NDK_VERSION=${{ matrix.ndk_version }}
+            BUNDLETOOL_VERSION=1.15.1
+            BUILDTOOLS_VERSION=${{ matrix.build_tools_version }}
+            PLATFORM_VERSION=${{ matrix.platform_version }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
