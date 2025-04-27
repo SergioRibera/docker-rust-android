@@ -33,12 +33,11 @@ ENV GRADLE_HOME=/opt/gradle/gradle-${GRADLE_VERSION}/bin
 ENV BUNDLETOOL_PATH=${ANDROID_HOME}/bundletool-all-${BUNDLETOOL_VERSION}.jar
 ENV ANDROID_SDK_ROOT=${ANDROID_HOME}
 ENV ANDROID_NDK_ROOT=${NDK_HOME}
-ENV PATH=$PATH:${ANDROID_HOME}:${ANDROID_NDK_ROOT}:${GRADLE_HOME}:${ANDROID_HOME}/build-tools/${BUILDTOOLS_VERSION}:${ANDROID_HOME}/cmdline-tools/bin
+ENV PATH="$PATH:${ANDROID_HOME}:${ANDROID_NDK_ROOT}:${GRADLE_HOME}:${ANDROID_HOME}/build-tools/${BUILDTOOLS_VERSION}:${ANDROID_HOME}/cmdline-tools/bin:/root/.cargo/bin"
+ENV RUST_ANDROID_GRADLE_PYTHON_COMMAND=/usr/bin/python3
 
 # Copy tool
 COPY --chmod=0755 ./tools/apk2aab /bin
-
-RUN . "$HOME/.cargo/env"
 
 # Download gradle with correct version
 RUN wget -c https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && rm -fr /tmp/gradle-${GRADLE_VERSION}-bin.zip
