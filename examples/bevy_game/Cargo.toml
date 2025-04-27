@@ -8,8 +8,4 @@ name = "bevy_game"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-bevy = "0.10.1"
-
-# This is needed to fix android view
-[patch.crates-io]
-android-activity = { git = "https://github.com/rust-mobile/android-activity", rev = "79e03e08fbf70e374cb88d8ef8c89acaa006bbfc" }
+bevy = "0.14"

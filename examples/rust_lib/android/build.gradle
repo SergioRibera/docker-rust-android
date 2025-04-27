@@ -6,12 +6,11 @@ buildscript {
     }
     dependencies {
         classpath libraries.androidGradlePlugin
-        classpath "org.mozilla.rust-android-gradle:plugin:0.9.3"
     }
 }
 
 plugins {
-    id "org.mozilla.rust-android-gradle.rust-android" version "0.9.3"
+    id "org.mozilla.rust-android-gradle.rust-android" version "0.9.6"
 }
 
 apply from: "config.gradle"
@@ -50,8 +49,14 @@ android {
 
 cargo {
     module = "../"
-    targets = ["arm64"]
     libname = "rust_lib"
+    targets = [
+        // "arm",
+        "arm64",
+        // "x86",
+        // "x86_64"
+    ]
+    targetDirectory = "../target"
     if (project.gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
         profile = "release"
     } else {
@@ -73,14 +78,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
-afterEvaluate {
-    // The `cargoBuild` task isn't available until after evaluation.
-    android.applicationVariants.all { variant ->
-        def productFlavor = ""
-        variant.productFlavors.each {
-            productFlavor += "${it.name.capitalize()}"
-        }
-        def buildType = "${variant.buildType.name.capitalize()}"
-        tasks["generate${productFlavor}${buildType}Assets"].dependsOn(tasks["cargoBuild"])
+tasks.whenTaskAdded { task ->
+    if (task.name == 'mergeDebugJniLibFolders' || task.name == 'mergeReleaseJniLibFolders') {
+        task.dependsOn 'cargoBuild'
     }
 }

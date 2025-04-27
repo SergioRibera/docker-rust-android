@@ -1,15 +1,15 @@
 ext.versions = [
-    androidGradlePlugin: "7.4.2",
-    compileSdk         : 33,
+    androidGradlePlugin: "8.1.0",
+    compileSdk         : 34,
     minSdk             : 26,
     targetSdk          : 31,
-    buildTools         : "30.0.3",
+    buildTools         : "34.0.0",
     kotlinVersion      : "1.6.21",
     fragmentVersion    : "1.3.6",
     appcompatVersion   : "1.4.0",
     nexusPublishVersion: "1.1.0",
     javaVersion        : 17,
-    ndkVersion         : "25.1.8937393"
+    ndkVersion         : "29.0.13113456"
 ]
 
 ext.libraries = [
