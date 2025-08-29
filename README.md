@@ -25,9 +25,9 @@ Command Line:
 
 ```bash
 # Debug
-docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:180-sdk-36 assembleDebug -p <android project path>
+docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:1.80-sdk-36 assembleDebug -p <android project path>
 # Release
-docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:180-sdk-36 assembleRelease -p <android project path>
+docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:1.80-sdk-36 assembleRelease -p <android project path>
 ```
 
 Github Action:
@@ -59,6 +59,10 @@ jobs:
 ```
 
 ## Build Examples
+
+> [!IMPORTANT]
+> You can check the justfile to see how build, generate key and sign apk
+> You can use `just run <example name>` and `build -> sign -> install` automatic
 
 Bevy Game
 

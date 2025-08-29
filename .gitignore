@@ -1,5 +1,7 @@
-examples/*/android/gradle
-examples/*/android/build
-examples/*/android/.gradle
+examples/*.kjs
+examples/**/.idea
+examples/**/gradle/wrapper/
+examples/**/build
+examples/**/.gradle
 ***/target
 ***/Cargo.lock
