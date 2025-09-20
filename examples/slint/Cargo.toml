@@ -1,0 +1,13 @@
+[package]
+name = "slint_test"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+slint = { version = "1.13", features = ["backend-android-activity-06"] }
+
+[build-dependencies]
+slint-build = "1.13"

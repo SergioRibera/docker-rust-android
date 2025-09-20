@@ -75,3 +75,9 @@ Rust Library
 ```bash
 docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:1.80-sdk-36 assembleDebug -p examples/rust_lib/android
 ```
+
+Slint Mobile
+
+```bash
+docker run --rm -it -v "$(pwd)/:/src" -w /src sergioribera/rust-android:1.80-sdk-36 assembleDebug -p examples/slint
+```
