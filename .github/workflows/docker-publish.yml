@@ -72,14 +72,14 @@ jobs:
 
           for RUST_VERSION in $RUST_VERSIONS; do
             for SDK_VERSION in $ANDROID_VERSIONS; do
-              if [[ "$SDK_VERSION" -ge 34 ]]; then
+              if [[ "$SDK_VERSION" -ge 36 ]]; then
+                BUILD_TOOLS="36.1.0"
+                GRADLE_VERSION="9.1.0"
+                GRADLE_PLUGIN="8.13"
+              else
                 BUILD_TOOLS="34.0.0"
                 GRADLE_VERSION="8.2"
                 GRADLE_PLUGIN="8.1.0"
-              else
-                BUILD_TOOLS="33.0.2"
-                GRADLE_VERSION="8.0.1"
-                GRADLE_PLUGIN="7.4"
               fi
 
               if [[ "$FIRST" = false ]]; then
