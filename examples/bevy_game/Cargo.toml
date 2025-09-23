@@ -8,4 +8,4 @@ name = "bevy_game"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-bevy = "0.14"
+bevy = "0.17"

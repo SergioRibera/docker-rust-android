@@ -1,88 +1,209 @@
 /// This is a Bevy game Example from
-/// https://github.com/bevyengine/bevy/blob/main/examples/animation/animated_ui.rs
+/// https://github.com/bevyengine/bevy/blob/329630c84a935c43801d37bb3a3bc1884e73d172/examples/mobile/src/lib.rs
 ///
+/// A 3d Scene with a button and playing sound.
+
 use bevy::{
-    color::palettes::css::{ORANGE, SILVER, WHITE},
-    math::vec3,
+    color::palettes::basic::*,
+    input::{gestures::RotationGesture, touch::TouchPhase},
+    log::{Level, LogPlugin},
     prelude::*,
+    window::{AppLifecycle, ScreenEdge, WindowMode},
+    winit::WinitSettings,
 };
 
-#[derive(Component)]
-struct Curve(CubicCurve<Vec3>);
-
+// the `bevy_main` proc_macro generates the required boilerplate for Android
 #[bevy_main]
-fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_systems(Startup, setup)
-        .add_systems(Update, animate_cube)
-        .run();
+/// The entry point for the application. Is `pub` so that it can be used from
+/// `main.rs`.
+pub fn main() {
+    let mut app = App::new();
+    app.add_plugins(
+        DefaultPlugins
+            .set(LogPlugin {
+                // This will show some log events from Bevy to the native logger.
+                level: Level::DEBUG,
+                filter: "wgpu=error,bevy_render=info,bevy_ecs=trace".to_string(),
+                ..Default::default()
+            })
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    resizable: false,
+                    mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                    // on iOS, gestures must be enabled.
+                    // This doesn't work on Android
+                    recognize_rotation_gesture: true,
+                    // Only has an effect on iOS
+                    prefers_home_indicator_hidden: true,
+                    // Only has an effect on iOS
+                    prefers_status_bar_hidden: true,
+                    // Only has an effect on iOS
+                    preferred_screen_edges_deferring_system_gestures: ScreenEdge::Bottom,
+                    ..default()
+                }),
+                ..default()
+            }),
+    )
+    // Make the winit loop wait more aggressively when no user input is received
+    // This can help reduce cpu usage on mobile devices
+    .insert_resource(WinitSettings::mobile())
+    .add_systems(Startup, (setup_scene, setup_music))
+    .add_systems(
+        Update,
+        (
+            touch_camera,
+            button_handler,
+            // Only run the lifetime handler when an [`AudioSink`] component exists in the world.
+            // This ensures we don't try to manage audio that hasn't been initialized yet.
+            handle_lifetime.run_if(any_with_component::<AudioSink>),
+        ),
+    )
+    .run();
 }
 
-fn setup(
+fn touch_camera(
+    window: Query<&Window>,
+    mut touch_inputs: MessageReader<TouchInput>,
+    mut camera_transform: Single<&mut Transform, With<Camera3d>>,
+    mut last_position: Local<Option<Vec2>>,
+    mut rotation_gestures: MessageReader<RotationGesture>,
+) {
+    let Ok(window) = window.single() else {
+        return;
+    };
+
+    for touch_input in touch_inputs.read() {
+        if touch_input.phase == TouchPhase::Started {
+            *last_position = None;
+        }
+        if let Some(last_position) = *last_position {
+            **camera_transform = Transform::from_xyz(
+                camera_transform.translation.x
+                    + (touch_input.position.x - last_position.x) / window.width() * 5.0,
+                camera_transform.translation.y,
+                camera_transform.translation.z
+                    + (touch_input.position.y - last_position.y) / window.height() * 5.0,
+            )
+            .looking_at(Vec3::ZERO, Vec3::Y);
+        }
+        *last_position = Some(touch_input.position);
+    }
+    // Rotation gestures only work on iOS
+    for rotation_gesture in rotation_gestures.read() {
+        let forward = camera_transform.forward();
+        camera_transform.rotate_axis(forward, rotation_gesture.0 / 10.0);
+    }
+}
+
+/// set up a simple 3D scene
+fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // Define your control points
-    // These points will define the curve
-    // You can learn more about bezier curves here
-    // https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-    let points = [[
-        vec3(-6., 2., 0.),
-        vec3(12., 8., 0.),
-        vec3(-12., 8., 0.),
-        vec3(6., 2., 0.),
-    ]];
-
-    // Make a CubicCurve
-    let bezier = CubicBezier::new(points).to_curve();
-
-    // Spawning a cube to experiment on
+    // plane
     commands.spawn((
-        PbrBundle {
-            mesh: meshes.add(Cuboid::default()),
-            material: materials.add(Color::from(ORANGE)),
-            transform: Transform::from_translation(points[0][0]),
+        Mesh3d(meshes.add(Plane3d::default().mesh().size(5.0, 5.0))),
+        MeshMaterial3d(materials.add(Color::srgb(0.1, 0.2, 0.1))),
+    ));
+    // cube
+    commands.spawn((
+        Mesh3d(meshes.add(Cuboid::default())),
+        MeshMaterial3d(materials.add(Color::srgb(0.5, 0.4, 0.3))),
+        Transform::from_xyz(0.0, 0.5, 0.0),
+    ));
+    // sphere
+    commands.spawn((
+        Mesh3d(meshes.add(Sphere::new(0.5).mesh().ico(4).unwrap())),
+        MeshMaterial3d(materials.add(Color::srgb(0.1, 0.4, 0.8))),
+        Transform::from_xyz(1.5, 1.5, 1.5),
+    ));
+    // light
+    commands.spawn((
+        PointLight {
+            intensity: 1_000_000.0,
+            // Shadows makes some Android devices segfault, this is under investigation
+            // https://github.com/bevyengine/bevy/issues/8214
+            #[cfg(not(target_os = "android"))]
+            shadows_enabled: true,
             ..default()
         },
-        Curve(bezier),
+        Transform::from_xyz(4.0, 8.0, 4.0),
+    ));
+    // camera
+    commands.spawn((
+        Camera3d::default(),
+        Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        // MSAA makes some Android devices panic, this is under investigation
+        // https://github.com/bevyengine/bevy/issues/8229
+        #[cfg(target_os = "android")]
+        Msaa::Off,
     ));
 
-    // Some light to see something
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            shadows_enabled: true,
-            intensity: 10_000_000.,
-            range: 100.0,
-            ..default()
-        },
-        transform: Transform::from_xyz(8., 16., 8.),
-        ..default()
-    });
-
-    // ground plane
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Plane3d::default().mesh().size(50., 50.)),
-        material: materials.add(Color::from(SILVER)),
-        ..default()
-    });
-
-    // The camera
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0., 6., 12.).looking_at(Vec3::new(0., 3., 0.), Vec3::Y),
-        ..default()
-    });
+    // Test ui
+    commands
+        .spawn((
+            Button,
+            Node {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                position_type: PositionType::Absolute,
+                left: px(50),
+                right: px(50),
+                bottom: px(50),
+                ..default()
+            },
+        ))
+        .with_child((
+            Text::new("Test Button"),
+            TextFont {
+                font_size: 30.0,
+                ..default()
+            },
+            TextColor::BLACK,
+            TextLayout::new_with_justify(Justify::Center),
+        ));
 }
 
-fn animate_cube(time: Res<Time>, mut query: Query<(&mut Transform, &Curve)>, mut gizmos: Gizmos) {
-    let t = (time.elapsed_seconds().sin() + 1.) / 2.;
+fn button_handler(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor),
+        (Changed<Interaction>, With<Button>),
+    >,
+) {
+    for (interaction, mut color) in &mut interaction_query {
+        match *interaction {
+            Interaction::Pressed => {
+                *color = BLUE.into();
+            }
+            Interaction::Hovered => {
+                *color = GRAY.into();
+            }
+            Interaction::None => {
+                *color = WHITE.into();
+            }
+        }
+    }
+}
 
-    for (mut transform, cubic_curve) in &mut query {
-        // Draw the curve
-        gizmos.linestrip(cubic_curve.0.iter_positions(50), WHITE);
-        // position takes a point from the curve where 0 is the initial point
-        // and 1 is the last point
-        transform.translation = cubic_curve.0.position(t);
+fn setup_music(asset_server: Res<AssetServer>, mut commands: Commands) {
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("sounds/Windless Slopes.ogg")),
+        PlaybackSettings::LOOP,
+    ));
+}
+
+// Pause audio when app goes into background and resume when it returns.
+// This is handled by the OS on iOS, but not on Android.
+fn handle_lifetime(
+    mut app_lifecycle_reader: MessageReader<AppLifecycle>,
+    music_controller: Single<&AudioSink>,
+) {
+    for app_lifecycle in app_lifecycle_reader.read() {
+        match app_lifecycle {
+            AppLifecycle::Idle | AppLifecycle::WillSuspend | AppLifecycle::WillResume => {}
+            AppLifecycle::Suspended => music_controller.pause(),
+            AppLifecycle::Running => music_controller.play(),
+        }
     }
 }

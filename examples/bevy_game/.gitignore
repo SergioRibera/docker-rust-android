@@ -1,0 +1,6 @@
+android/src/main/jniLibs/
+android/.idea/
+gradle/wrapper/
+***/build/
+.gradle
+target

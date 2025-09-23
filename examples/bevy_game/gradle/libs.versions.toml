@@ -1,0 +1,23 @@
+[versions]
+androidGradlePlugin = "8.13.0"
+compile-sdk = "36"
+min-sdk = "26"
+target-sdk = "34"
+build-tools = "35.0.0"
+kotlin = "1.9.22"
+appcompat = "1.6.1"
+material = "1.10.0"
+gamesActivity = "2.0.2"
+ndk = "29.0.14033849"
+java = "17"
+
+[libraries]
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+games-activity = { group = "androidx.games", name = "games-activity", version.ref = "gamesActivity" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+rust-android = { id = "org.mozilla.rust-android-gradle.rust-android", version = "0.9.6" }
