@@ -1,13 +1,13 @@
 [versions]
-androidGradlePlugin = "8.2.2"
+androidGradlePlugin = "8.13.0"
 compile-sdk = "36"
 min-sdk = "26"
 target-sdk = "34"
-build-tools = "34.0.0"
+build-tools = "35.0.0"
 kotlin = "1.9.22"
 appcompat = "1.6.1"
 constraintlayout = "2.1.4"
-ndk = "29.0.13113456"
+ndk = "29.0.14033849"
 java = "17"
 
 [libraries]

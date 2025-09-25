@@ -74,8 +74,8 @@ jobs:
             for SDK_VERSION in $ANDROID_VERSIONS; do
               if [[ "$SDK_VERSION" -ge 36 ]]; then
                 BUILD_TOOLS="36.1.0"
-                GRADLE_VERSION="9.1.0"
-                GRADLE_PLUGIN="8.13"
+                GRADLE_VERSION="8.13"
+                GRADLE_PLUGIN="8.13.0"
               else
                 BUILD_TOOLS="34.0.0"
                 GRADLE_VERSION="8.2"
