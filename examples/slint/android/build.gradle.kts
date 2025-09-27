@@ -44,8 +44,8 @@ android {
         getByName("main") {
             manifest.srcFile("AndroidManifest.xml")
             java.srcDirs("src")
-            assets.srcDirs("../../assets")
-            res.srcDirs("../../res_android")
+            // assets.srcDirs("../../assets")
+            res.srcDirs("res_android")
         }
     }
 }
