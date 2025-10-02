@@ -3,5 +3,5 @@ examples/**/.idea
 examples/**/gradle/wrapper/
 examples/**/build
 examples/**/.gradle
-***/target
-***/Cargo.lock
+examples/**/target
+examples/**/Cargo.lock
