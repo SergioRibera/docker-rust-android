@@ -38,35 +38,39 @@ ENV ANDROID_NDK=${NDK_HOME}
 ENV RUST_ANDROID_GRADLE_PYTHON_COMMAND=/usr/bin/python3
 
 # Set up paths
-ENV PATH="$PATH:${ANDROID_HOME}:${NDK_HOME}:${GRADLE_HOME}:${ANDROID_HOME}/build-tools/${BUILDTOOLS_VERSION}:${ANDROID_HOME}/cmdline-tools/bin:/root/.cargo/bin"
+ENV PATH="$PATH:${ANDROID_HOME}:${NDK_HOME}:${GRADLE_HOME}:${ANDROID_HOME}/build-tools/${BUILDTOOLS_VERSION}:${ANDROID_HOME}/cmdline-tools/bin:${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:/root/.cargo/bin"
 
-# # ARMv7 (armeabi-v7a)
-# ENV CC_armv7_linux_androideabi="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${PLATFORM_VERSION#android-}-clang"
-# ENV CXX_armv7_linux_androideabi="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${PLATFORM_VERSION#android-}-clang++"
-# ENV AR_armv7_linux_androideabi="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
-# ENV CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="${CC_armv7_linux_androideabi}"
-#
-# # ARM64 (aarch64)
-# ENV CC_aarch64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${PLATFORM_VERSION#android-}-clang"
-# ENV CXX_aarch64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${PLATFORM_VERSION#android-}-clang++"
-# ENV AR_aarch64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
-# ENV CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${CC_aarch64_linux_android}"
-#
-# # x86 (i686)
-# ENV CC_i686_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${PLATFORM_VERSION#android-}-clang"
-# ENV CXX_i686_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${PLATFORM_VERSION#android-}-clang++"
-# ENV AR_i686_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
-# ENV CARGO_TARGET_I686_LINUX_ANDROID_LINKER="${CC_i686_linux_android}"
-#
-# # x86_64
-# ENV CC_x86_64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${PLATFORM_VERSION#android-}-clang"
-# ENV CXX_x86_64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${PLATFORM_VERSION#android-}-clang++"
-# ENV AR_x86_64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
-# ENV CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="${CC_x86_64_linux_android}"
-#
-# # Common CFLAGS and CXXFLAGS
-# ENV CFLAGS="-D__ANDROID_MIN_SDK_VERSION__=${PLATFORM_VERSION#android-}"
-# ENV CXXFLAGS="-D__ANDROID_MIN_SDK_VERSION__=${PLATFORM_VERSION#android-}"
+# ARMv7 (armeabi-v7a)
+ENV CC_armv7_linux_androideabi="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${PLATFORM_VERSION#android-}-clang"
+ENV CXX_armv7_linux_androideabi="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi${PLATFORM_VERSION#android-}-clang++"
+ENV AR_armv7_linux_androideabi="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+ENV RANLIB_armv7_linux_androideabi="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
+ENV CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="${CC_armv7_linux_androideabi}"
+
+# ARM64 (aarch64)
+ENV CC_aarch64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${PLATFORM_VERSION#android-}-clang"
+ENV CXX_aarch64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${PLATFORM_VERSION#android-}-clang++"
+ENV AR_aarch64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+ENV RANLIB_aarch64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
+ENV CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${CC_aarch64_linux_android}"
+
+# x86 (i686)
+ENV CC_i686_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${PLATFORM_VERSION#android-}-clang"
+ENV CXX_i686_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android${PLATFORM_VERSION#android-}-clang++"
+ENV AR_i686_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+ENV RANLIB_i686_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
+ENV CARGO_TARGET_I686_LINUX_ANDROID_LINKER="${CC_i686_linux_android}"
+
+# x86_64
+ENV CC_x86_64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${PLATFORM_VERSION#android-}-clang"
+ENV CXX_x86_64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${PLATFORM_VERSION#android-}-clang++"
+ENV AR_x86_64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+ENV RANLIB_x86_64_linux_android="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib"
+ENV CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="${CC_x86_64_linux_android}"
+
+# Common CFLAGS and CXXFLAGS
+ENV CFLAGS="-D__ANDROID_MIN_SDK_VERSION__=${PLATFORM_VERSION#android-}"
+ENV CXXFLAGS="-D__ANDROID_MIN_SDK_VERSION__=${PLATFORM_VERSION#android-}"
 
 # Copy tool
 COPY --chmod=0755 ./tools/apk2aab /bin
