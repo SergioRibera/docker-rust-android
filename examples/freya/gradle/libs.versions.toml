@@ -1,0 +1,21 @@
+[versions]
+androidGradlePlugin = "8.13.0"
+compile-sdk = "36"
+min-sdk = "28"
+target-sdk = "34"
+build-tools = "35.0.0"
+kotlin = "1.9.22"
+appcompat = "1.6.1"
+constraintlayout = "2.1.4"
+ndk = "29.0.14033849"
+java = "17"
+
+[libraries]
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+rust-android = { id = "org.mozilla.rust-android-gradle.rust-android", version = "0.9.6" }

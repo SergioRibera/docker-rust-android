@@ -1,19 +1,21 @@
 [package]
-name = "bevy_game"
+name = "freya_app"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
 name = "freya_app"
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["cdylib"]
 
 [dependencies]
-# freya = "0.3.0-rc.4"
-freya = { git = "https://github.com/rebecca-src/freya", branch = "experiment/android" }
+freya = "0.3.4"
 
 [target.'cfg(target_os="android")'.dependencies]
 android-activity = { version = "0.6.0", features = ["native-activity"] }
 winit = { version = "0.30.5", features = ["android-native-activity", "rwh_06"] }
+
+# [target.'cfg(target_os="android")'.patch.crates-io]
+# freya = { git = "https://github.com/rebecca-src/freya", branch = "experiment/android" }
 
 [features]
 default = []
@@ -21,5 +23,5 @@ desktop = []
 
 [[bin]]
 path = "src/lib.rs"
-name = "droidapp"
+name = "freya_app"
 required-features = ["desktop"]
