@@ -55,8 +55,13 @@ jobs:
             rm -fr /tmp/commandlinetools-linux-13114758_latest.zip
 
           echo "Fetching Android SDK versions..."
-          SDK_LIST=$(sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --list --channel=0 | grep -E 'platforms;android-[0-9]+' | awk '{print $1}' | cut -d';' -f2 | sort -Vr)
-          ANDROID_VERSIONS=$(echo "$SDK_LIST" | grep -E 'android-(3[3-9])' | head -4 | sed 's/android-//')
+          # Filter out minor SDK releases (e.g. android-37.0 = Android 16
+          # QPR). AGP < 8.14 looks up platforms by integer name only and
+          # cannot resolve the dotted form, so a `platforms;android-37.0`
+          # image will fail every build with "Failed to find target with
+          # hash string 'android-37'".
+          SDK_LIST=$(sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --list --channel=0 | grep -E 'platforms;android-[0-9]+(\.[0-9]+)?\s' | awk '{print $1}' | cut -d';' -f2 | sort -Vr)
+          ANDROID_VERSIONS=$(echo "$SDK_LIST" | grep -E '^android-(3[3-9])$' | head -4 | sed 's/android-//')
 
           echo "Selected Android versions:"
           echo "$ANDROID_VERSIONS"
@@ -164,7 +169,7 @@ jobs:
             GRADLE_PLUGIN_VERSION=${{ matrix.gradle_plugin_version }}
             JAVA_VERSION=17
             NDK_VERSION=${{ matrix.ndk_version }}
-            BUNDLETOOL_VERSION=1.15.1
+            BUNDLETOOL_VERSION=1.18.0
             BUILDTOOLS_VERSION=${{ matrix.build_tools_version }}
             PLATFORM_VERSION=${{ matrix.platform_version }}
           cache-from: type=local,src=/tmp/.buildx-cache

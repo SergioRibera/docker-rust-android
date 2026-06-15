@@ -54,11 +54,14 @@ RUN wget -c https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-b
 # Install bundletool
 RUN wget -c "https://github.com/google/bundletool/releases/download/${BUNDLETOOL_VERSION}/bundletool-all-${BUNDLETOOL_VERSION}.jar" -P ${ANDROID_HOME}
 
-# Install Android Command Line Tools
+# Install Android Command Line Tools. Pin matches the version used by
+# .github/workflows/docker-publish.yml so the matrix-discovery step
+# (which runs the same `sdkmanager --list` outside the container)
+# resolves the same package set the Dockerfile then installs.
 RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
-    wget -c "https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip" -P /tmp && \
-    unzip -d ${ANDROID_HOME} /tmp/commandlinetools-linux-8512546_latest.zip && \
-    rm -fr /tmp/commandlinetools-linux-8512546_latest.zip
+    wget -c "https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip" -P /tmp && \
+    unzip -d ${ANDROID_HOME} /tmp/commandlinetools-linux-13114758_latest.zip && \
+    rm -fr /tmp/commandlinetools-linux-13114758_latest.zip
 
 # Install sdk required
 RUN echo y | sdkmanager --sdk_root=${ANDROID_HOME} --install "build-tools;${BUILDTOOLS_VERSION}"
