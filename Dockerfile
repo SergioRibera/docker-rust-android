@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 # Variable arguments
 ARG RUST_VERSION=1.90
